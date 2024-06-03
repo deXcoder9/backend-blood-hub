@@ -36,6 +36,15 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/users', async(req, res) => {
+          const email = req.query.email;
+          const query = {email: email}
+          const users = await usersCollection.find(query).toArray()
+          // console.log(users)
+          res.send(users);
+        })
+
+
 
 
       // Send a ping to confirm a successful connection
