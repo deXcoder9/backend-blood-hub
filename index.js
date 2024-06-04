@@ -37,12 +37,19 @@ async function run() {
         })
 
         app.get('/users', async(req, res) => {
-          const email = req.query.email;
-          const query = {email: email}
-          const users = await usersCollection.find(query).toArray()
-          // console.log(users)
-          res.send(users);
+          const result =  await usersCollection.find().toArray()
+          res.send(result);
         })
+       
+
+        // Profile related api
+        // app.get('/users/hi/:email', async(req, res) => {
+        //   const email = req.params.email;
+        //   const query = {email: email}
+        //   const users = await usersCollection.find(query).toArray()
+        //   // console.log(users)
+        //   res.send(users);
+        // })
 
 
 
