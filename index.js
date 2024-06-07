@@ -26,6 +26,7 @@ async function run() {
       await client.connect();
 
         const usersCollection = client.db("Bloodhub").collection("users");
+        const donationRequestsCollection = client.db("Bloodhub").collection("donation-requests");
 
 
 
@@ -81,6 +82,25 @@ async function run() {
             $set : {status : "active"}
           }
           const result = await usersCollection.updateOne(filter, updateDoc)
+          res.send(result);
+        })
+
+        // donatiion requests api 
+        app.post("/donationrequests", async(req, res) => {
+          const donationRequest = req.body;
+          const result = await donationRequestsCollection.insertOne(donationRequest)
+          res.send(result);
+        })
+
+        app.get("/donationrequests", async(req, res) => {
+          const result =  await donationRequestsCollection.find().toArray()
+          res.send(result);
+        })
+
+        app.delete("/donationrequests/:id", async(req, res) => {
+          const id = req.params.id;
+          const filter = {_id : new ObjectId(id)}
+          const result = await donationRequestsCollection.deleteOne(filter)
           res.send(result);
         })
 
