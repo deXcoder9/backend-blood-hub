@@ -104,6 +104,14 @@ async function run() {
           res.send(result);
         })
 
+        app.get('/donationrequestbyemail', async (req, res) => {
+          // console.log("locha elelee siam")
+          const email = req.query.email
+          const query = {userEmail: email}
+          const result = await donationRequestsCollection.find(query).toArray();
+          // console.log(email)
+          res.send(result)
+        })
        
 
         // Profile related api
