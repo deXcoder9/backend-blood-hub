@@ -85,6 +85,7 @@ async function run() {
           res.send(result);
         })
 
+
         // donatiion requests api 
         app.post("/donationrequests", async(req, res) => {
           const donationRequest = req.body;
@@ -107,12 +108,63 @@ async function run() {
         app.get('/donationrequestbyemail', async (req, res) => {
           // console.log("locha elelee siam")
           const email = req.query.email
-          const query = {userEmail: email}
-          const result = await donationRequestsCollection.find(query).toArray();
-          // console.log(email)
-          res.send(result)
-        })
+          const sort = req.query.sort
+          // console.log(sort)
+          let query = {userEmail: email}
+          if(sort !== "default" ){
+           query = { status: sort, userEmail: email}
+          }
+        const result = await  donationRequestsCollection.find(query).toArray();
+        res.send(result)
+        console.log(result);
+          })
        
+        app.get("/donationdetails/:id", async (req, res) => {
+          const id = req.params.id;
+          const filter = {_id : new ObjectId(id)}
+          const result = await donationRequestsCollection.findOne(filter)
+          res.send(result);
+        })
+
+        app.patch("/changetoinprogress/:id", async (req, res) => {
+          const id = req.params.id;
+          const filter = {_id : new ObjectId(id)}
+          const updateDoc = {
+            $set : {status : "inProgress"}
+          }
+          const result = await donationRequestsCollection.updateOne(filter, updateDoc)
+          res.send(result);
+        })
+        app.patch("/donationCancel/:id", async (req, res) => {
+          const id = req.params.id;
+          const filter = {_id : new ObjectId(id)}
+          const updateDoc = {
+            $set : {status : "cancel"}
+          }
+          const result = await donationRequestsCollection.updateOne(filter, updateDoc)
+          res.send(result);
+        })
+        app.patch("/donationDone/:id", async (req, res) => {
+          const id = req.params.id;
+          const filter = {_id : new ObjectId(id)}
+          const updateDoc = {
+            $set : {status : "done"}
+          }
+          const result = await donationRequestsCollection.updateOne(filter, updateDoc)
+          res.send(result);
+        })
+
+        app.patch("/updatedonation/:id", async(req, res) => {
+          const id = req.params.id;
+          const filter = {_id : new ObjectId(id)}
+          const updateDoc = {
+            $set : req.body
+          }
+          const result = await donationRequestsCollection.updateOne(filter, updateDoc)
+          res.send(result);
+        })
+        
+
 
         // Profile related api
         // app.get('/users/hi/:email', async(req, res) => {
