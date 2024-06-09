@@ -1,206 +1,238 @@
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const express = require('express');
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const express = require("express");
 const app = express();
-const cors = require('cors');
-require('dotenv').config()
-const port = process.env.PORT || 5000
+const cors = require("cors");
+require("dotenv").config();
+const port = process.env.PORT || 5000;
 
 // middlewares
-app.use(cors())
-app.use(express.json())
+app.use(cors());
+app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_username}:${process.env.DB_passkey}@cluster0.wvuyzyg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 const client = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    }
-  });
-
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
 
 async function run() {
-    try {
-      // Connect the client to the server	(optional starting in v4.7)
-      await client.connect();
+  try {
+    // Connect the client to the server	(optional starting in v4.7)
+    await client.connect();
 
-        const usersCollection = client.db("Bloodhub").collection("users");
-        const donationRequestsCollection = client.db("Bloodhub").collection("donation-requests");
+    const usersCollection = client.db("Bloodhub").collection("users");
+    const donationRequestsCollection = client
+      .db("Bloodhub")
+      .collection("donation-requests");
 
-
-
-        // users related api
-        app.post('/users', async(req, res) => {
-            const user = req.body;
-            const query = {email : user.email}
-            const existingUser = await usersCollection.findOne(query);
-            if(existingUser) {
-              return res.send({message: "User already exists", insertedId: null})
-            }
-            const result = await usersCollection.insertOne(user)
-            // const allUsers =  await usersCollection.find().toArray()
-            res.send(result);
-        })
-
-        app.get('/users', async(req, res) => {
-          const result =  await usersCollection.find().toArray()
-          res.send(result);
-        })
-
-        app.patch("/users/makeadmin/:id", async(req, res) => {
-          const id = req.params.id;
-          const filter = {_id : new ObjectId(id)}
-          const updateDoc = {
-            $set : {role : "admin"}
-          }
-          const result = await usersCollection.updateOne(filter, updateDoc)
-          res.send(result);
-        })
-        app.patch("/users/makevolunteer/:id", async(req, res) => {
-          const id = req.params.id;
-          const filter = {_id : new ObjectId(id)}
-          const updateDoc = {
-            $set : {role : "volunteer"}
-          }
-          const result = await usersCollection.updateOne(filter, updateDoc)
-          res.send(result);
-        })
-        app.patch("/users/block/:id", async(req, res) => {
-          const id = req.params.id;
-          const filter = {_id : new ObjectId(id)}
-          const updateDoc = {
-            $set : {status : "block"}
-          }
-          const result = await usersCollection.updateOne(filter, updateDoc)
-          res.send(result);
-        })
-        app.patch("/users/unblock/:id", async(req, res) => {
-          const id = req.params.id;
-          const filter = {_id : new ObjectId(id)}
-          const updateDoc = {
-            $set : {status : "active"}
-          }
-          const result = await usersCollection.updateOne(filter, updateDoc)
-          res.send(result);
-        })
+    // users related api
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await usersCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "User already exists", insertedId: null });
+      }
+      const result = await usersCollection.insertOne(user);
+      // const allUsers =  await usersCollection.find().toArray()
+      res.send(result);
+    });
+    app.get("/loggedinusers", async (req, res) => {
+      const email = req.query.email
+      // console.log(email)
+      const query = {email: email}
+      const result = await usersCollection.findOne(query);
+      // console.log(result)
+      res.send(result);
+    })
 
 
-        // donatiion requests api 
-        app.post("/donationrequests", async(req, res) => {
-          const donationRequest = req.body;
-          const result = await donationRequestsCollection.insertOne(donationRequest)
-          res.send(result);
-        })
+    app.get("/users", async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
 
-        app.get("/donationrequests", async(req, res) => {
-          const result =  await donationRequestsCollection.find().toArray()
-          res.send(result);
-        })
+    app.patch("/users/makeadmin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { role: "admin" },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    app.patch("/users/makevolunteer/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { role: "volunteer" },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    app.patch("/users/block/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { status: "block" },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    app.patch("/users/unblock/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { status: "active" },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
 
-        app.delete("/donationrequests/:id", async(req, res) => {
-          const id = req.params.id;
-          const filter = {_id : new ObjectId(id)}
-          const result = await donationRequestsCollection.deleteOne(filter)
-          res.send(result);
-        })
+    // donatiion requests api
+    app.post("/donationrequests", async (req, res) => {
+      const donationRequest = req.body;
+      const result = await donationRequestsCollection.insertOne(
+        donationRequest
+      );
+      res.send(result);
+    });
 
-        app.get('/donationrequestbyemail', async (req, res) => {
-          // console.log("locha elelee siam")
-          const email = req.query.email
-          const sort = req.query.sort
-          // console.log(sort)
-          let query = {userEmail: email}
-          if(sort !== "default" ){
-           query = { status: sort, userEmail: email}
-          }
-        const result = await  donationRequestsCollection.find(query).toArray();
-        res.send(result)
-        console.log(result);
-          })
-       
-        app.get("/donationdetails/:id", async (req, res) => {
-          const id = req.params.id;
-          const filter = {_id : new ObjectId(id)}
-          const result = await donationRequestsCollection.findOne(filter)
-          res.send(result);
-        })
+    app.get("/donationrequests", async (req, res) => {
+      const result = await donationRequestsCollection.find().toArray();
+      res.send(result);
+    });
 
-        app.patch("/changetoinprogress/:id", async (req, res) => {
-          const id = req.params.id;
-          const filter = {_id : new ObjectId(id)}
-          const updateDoc = {
-            $set : {status : "inProgress"}
-          }
-          const result = await donationRequestsCollection.updateOne(filter, updateDoc)
-          res.send(result);
-        })
-        app.patch("/donationCancel/:id", async (req, res) => {
-          const id = req.params.id;
-          const filter = {_id : new ObjectId(id)}
-          const updateDoc = {
-            $set : {status : "cancel"}
-          }
-          const result = await donationRequestsCollection.updateOne(filter, updateDoc)
-          res.send(result);
-        })
-        app.patch("/donationDone/:id", async (req, res) => {
-          const id = req.params.id;
-          const filter = {_id : new ObjectId(id)}
-          const updateDoc = {
-            $set : {status : "done"}
-          }
-          const result = await donationRequestsCollection.updateOne(filter, updateDoc)
-          res.send(result);
-        })
+    app.delete("/donationrequests/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await donationRequestsCollection.deleteOne(filter);
+      res.send(result);
+    });
 
-        app.patch("/updatedonation/:id", async(req, res) => {
-          const id = req.params.id;
-          const filter = {_id : new ObjectId(id)}
-          const updateDoc = {
-            $set : req.body
-          }
-          const result = await donationRequestsCollection.updateOne(filter, updateDoc)
-          res.send(result);
-        })
-        
+    app.get("/donationrequestbyemail", async (req, res) => {
+      // console.log("locha elelee siam")
+      const email = req.query.email;
+      const sort = req.query.sort;
+      // console.log("second", email)
+      // console.log(sort)
+      let query = { userEmail: email };
+      if (sort !== "default") {
+        query = { status: sort, userEmail: email };
+      }
+      const result = await donationRequestsCollection.find(query).toArray();
+      res.send(result);
+      // console.log(result);
+    });
+
+    app.get("/donationdetails/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await donationRequestsCollection.findOne(filter);
+      res.send(result);
+    });
+
+    app.patch("/changetoinprogress/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { status: "inProgress" },
+      };
+      const result = await donationRequestsCollection.updateOne(
+        filter,
+        updateDoc
+      );
+      res.send(result);
+    });
+    app.patch("/donationCancel/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { status: "cancel" },
+      };
+      const result = await donationRequestsCollection.updateOne(
+        filter,
+        updateDoc
+      );
+      res.send(result);
+    });
+    app.patch("/donationDone/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { status: "done" },
+      };
+      const result = await donationRequestsCollection.updateOne(
+        filter,
+        updateDoc
+      );
+      res.send(result);
+    });
+
+    app.patch("/updatedonation/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: req.body,
+      };
+      const result = await donationRequestsCollection.updateOne(
+        filter,
+        updateDoc
+      );
+      res.send(result);
+    });
 
 
-        // Profile related api
-        // app.get('/users/hi/:email', async(req, res) => {
-        //   const email = req.params.email;
-        //   const query = {email: email}
-        //   const users = await usersCollection.find(query).toArray()
-        //   // console.log(users)
-        //   res.send(users);
-        // })
+    // Donor Home Page
+    app.get("/recentdonationrequests", async(req, res) => {
+      const email = req.query.email
+      // console.log("first",email)
+      const query = {userEmail: email}
+      const options = {
+        sort : {serialNo : 1 },
+        projection: { donationDate: 1, donationTime:1, status:1,recipientName:1  }
+      }
+      // const result = await donationRequestsCollection.find(query).toArray()
+      const result = await donationRequestsCollection.find(query, options).toArray()
+      console.log(result)
+      res.send(result)
+
+    })
 
 
 
 
-      // Send a ping to confirm a successful connection
+
+
+    // Profile related api
+    // app.get('/users/hi/:email', async(req, res) => {
+    //   const email = req.params.email;
+    //   const query = {email: email}
+    //   const users = await usersCollection.find(query).toArray()
+    //   // console.log(users)
+    //   res.send(users);
+    // })
+
+    // Send a ping to confirm a successful connection
     //   await client.db("admin").command({ ping: 1 });
     //   console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    } finally {
-      // Ensures that the client will close when you finish/error
+  } finally {
+    // Ensures that the client will close when you finish/error
     //   await client.close();
-    }
   }
-  run().catch(console.dir);
+}
+run().catch(console.dir);
 
-
-
-app.get('/', (req, res)=>{
-    res.send("blood hub is running...")
-})
+app.get("/", (req, res) => {
+  res.send("blood hub is running...");
+});
 app.listen(port, () => {
-    console.log(`server is running on port ${port}`)
-})
-
-
-
-
-
+  console.log(`server is running on port ${port}`);
+});
 
 // const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 // const express = require("express");
