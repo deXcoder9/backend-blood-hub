@@ -129,6 +129,17 @@ async function run() {
       // console.log(result);
     });
 
+    // admin
+    app.get("/totalrequesteddonations", async (req, res) => {
+      const sort = req.query.sort;
+      let query = { };
+      if (sort !== "default") {
+          query = { status: sort }
+      }
+      const result = await donationRequestsCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.get("/donationdetails/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -198,7 +209,7 @@ async function run() {
       }
       // const result = await donationRequestsCollection.find(query).toArray()
       const result = await donationRequestsCollection.find(query, options).toArray()
-      console.log(result)
+      // console.log(result)
       res.send(result)
 
     })
