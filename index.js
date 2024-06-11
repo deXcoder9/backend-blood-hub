@@ -194,7 +194,7 @@ async function run() {
       const query = {userEmail: email}
       const options = {
         sort : {serialNo : 1 },
-        projection: { donationDate: 1, donationTime:1, status:1,recipientName:1  }
+        projection: { userEmail:1, donationDate: 1, donationTime:1, status:1,recipientName:1  }
       }
       // const result = await donationRequestsCollection.find(query).toArray()
       const result = await donationRequestsCollection.find(query, options).toArray()
