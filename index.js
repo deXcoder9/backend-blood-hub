@@ -42,14 +42,13 @@ async function run() {
       res.send(result);
     });
     app.get("/loggedinusers", async (req, res) => {
-      const email = req.query.email
+      const email = req.query.email;
       // console.log(email)
-      const query = {email: email}
+      const query = { email: email };
       const result = await usersCollection.findOne(query);
       // console.log(result)
       res.send(result);
-    })
-
+    });
 
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
@@ -132,9 +131,9 @@ async function run() {
     // admin
     app.get("/totalrequesteddonations", async (req, res) => {
       const sort = req.query.sort;
-      let query = { };
+      let query = {};
       if (sort !== "default") {
-          query = { status: sort }
+        query = { status: sort };
       }
       const result = await donationRequestsCollection.find(query).toArray();
       res.send(result);
@@ -197,41 +196,58 @@ async function run() {
       res.send(result);
     });
 
-
     // Donor Home Page
-    app.get("/recentdonationrequests", async(req, res) => {
-      const email = req.query.email
+    app.get("/recentdonationrequests", async (req, res) => {
+      const email = req.query.email;
       // console.log("first",email)
-      const query = {userEmail: email}
+      const query = { userEmail: email };
       const options = {
-        sort : {serialNo : 1 },
-        projection: { userEmail:1, donationDate: 1, donationTime:1, status:1,recipientName:1  }
-      }
+        sort: { serialNo: 1 },
+        projection: {
+          userEmail: 1,
+          donationDate: 1,
+          donationTime: 1,
+          status: 1,
+          recipientName: 1,
+        },
+      };
       // const result = await donationRequestsCollection.find(query).toArray()
-      const result = await donationRequestsCollection.find(query, options).toArray()
+      const result = await donationRequestsCollection
+        .find(query, options)
+        .toArray();
       // console.log(result)
-      res.send(result)
+      res.send(result);
+    });
 
+    // Public blood donations
+    app.get("/publicdonations", async (req, res) => {
+      const query = {status: "pending"}
+      const result = await donationRequestsCollection.find(query).toArray();
+      // console.log(result)
+      res.send(result);
     })
 
-    // Volunter Donation Requests
-    // app.get("/volunteerDonationRequests", async(req, res) => {
+    // public searched blood donations
+    app.post("/getsearcheddonations" , async (req, res) => {
+      let bloG  = req.body.bloodGroup
+      let dist = req.body.district
+      let upa = req.body.upazilla
+      // const details = req.body
+      console.log( bloG, dist, upa)
+      const query = {
+        district: dist,
+        upazilla: upa,
+        bloodGroup: bloG
+       }
+       const result = await usersCollection.find(query).toArray();
+       console.log(result)
+      res.send(result);
+    })
 
-    // })
 
 
 
 
-
-
-    // Profile related api
-    // app.get('/users/hi/:email', async(req, res) => {
-    //   const email = req.params.email;
-    //   const query = {email: email}
-    //   const users = await usersCollection.find(query).toArray()
-    //   // console.log(users)
-    //   res.send(users);
-    // })
 
     // Send a ping to confirm a successful connection
     //   await client.db("admin").command({ ping: 1 });
