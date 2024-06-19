@@ -25,6 +25,7 @@ async function run() {
     await client.connect();
 
     const usersCollection = client.db("Bloodhub").collection("users");
+    const blogsCollection = client.db("Bloodhub").collection("blog");
     const donationRequestsCollection = client
       .db("Bloodhub")
       .collection("donation-requests");
@@ -41,14 +42,14 @@ async function run() {
       // const allUsers =  await usersCollection.find().toArray()
       res.send(result);
     });
-    app.get("/loggedinusers", async (req, res) => {
+
+    app.get("/loggedinuser", async (req, res) => {
       const email = req.query.email;
-      // console.log(email)
-      const query = { email: email };
-      const result = await usersCollection.findOne(query);
-      // console.log(result)
-      res.send(result);
-    });
+      const query = {email: email}
+      const result = await usersCollection.findOne(query)
+      res.send(result)
+    })
+
 
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
@@ -87,6 +88,25 @@ async function run() {
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: { status: "active" },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    // update user profile
+    app.patch("/updateuserprofile/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body
+      console.log(data)
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          name: data.name,
+          photourl: data.image,
+          bloodGroup: data.bloodgroup,
+          district: data.district,
+          upazilla: data.upazila
+        }
       };
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
@@ -244,8 +264,56 @@ async function run() {
       res.send(result);
     })
 
+// blog related api
+    app.post("/blog", async (req, res) => {
+      const blog = req.body;
+      const result = await blogsCollection.insertOne(blog);
+      res.send(result);
+    })
 
+    app.get("/blogs", async (req, res) => {
+      const result = await blogsCollection.find().toArray();
+      res.send(result);
+    })
 
+    app.delete("/deleteablog/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id : new ObjectId(id)}
+      const result = await blogsCollection.deleteOne(filter)
+      res.send(result);
+    })
+
+    app.patch("/unpublishablog/:id",  async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id : new ObjectId(id)}
+      const updateDoc = {
+        $set: { status: "draft" },
+      };
+      const result = await blogsCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    })
+
+    app.patch("/publishablog/:id",  async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id : new ObjectId(id)}
+      const updateDoc = {
+        $set: { status: "publish" },
+      };
+      const result = await blogsCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    })
+
+    app.get("/sortedblogs", async (req, res) => {
+      const sort = req.query.sort;
+      console.log(sort)
+      let query = {};
+      if (sort !== "default") {
+        query = { status: sort };
+      }
+      const result = await blogsCollection.find(query).toArray();
+      res.send(result);
+      console.log(result)
+    });
 
 
 
