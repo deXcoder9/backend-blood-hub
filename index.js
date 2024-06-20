@@ -6,7 +6,14 @@ require("dotenv").config();
 const port = process.env.PORT || 5000;
 
 // middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://bloodhubxdexcoder.netlify.app"
+    ]
+  })
+);
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_username}:${process.env.DB_passkey}@cluster0.wvuyzyg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
