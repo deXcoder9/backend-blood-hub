@@ -315,6 +315,12 @@ async function run() {
       console.log(result)
     });
 
+    app.get("/getblogdetailsbyid/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await blogsCollection.findOne(filter);
+      res.send(result);
+    });
 
 
     // Send a ping to confirm a successful connection
